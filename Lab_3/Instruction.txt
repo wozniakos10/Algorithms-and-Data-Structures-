@@ -1,0 +1,29 @@
+1. Implementacja kolejki na tablicy cyklicznej
+Celem ćwiczenia jest wykorzystanie realokowalnej tablicy jako 'bazy' do stworzenia kolejki. Ze względu na to, że Python ma wbudowaną obsługę tablic dynamicznych i sam zarządza pamięcią, stworzenie w nim tablicy z 'ręczną' realokacją wymaga przyjęcia pewnych ograniczeń:
+tablicę implementujemy jako listę o zadanym rozmiarze np:
+tab = [None for i in range(size)]
+Poza tym wprowadzimy 'protezę' na funkcję realloc:
+def realloc(tab, size):
+    oldSize = len(tab)
+    return [tab[i] if i<oldSize else None  for i in range(size)]
+
+Używając powyższych konstrukcji zaimplementuj kolejkę wykorzystując tablicę cykliczną.
+Zdefiniuj klasę reprezentującą kolejkę.  Reprezentacja kolejki powinna zawierać pola przechowujące:  tablicę, jej aktualny rozmiar, indeks miejsca zapisu do kolejki i indeks miejsca odczytu z kolejki.
+Następnie należy zaimplementować metody:
+konstruktor tworzący pustą kolejkę - ALE ma tu powstać  5-cio elementowa tablica  (na razie pusta), rozmiar będzie ustawiony na 5 a oba indeksy na 0.
+is_empty - zwracająca True jeżeli indeks miejsca odczytu jest równy indeksowi miejsca zapisu
+peek - zwracająca daną z miejsca odczytu lub None dla pustej kolejki
+dequeue - zwracająca None jeżeli kolejka jest pusta lub daną z miejsca odczytu (wtedy przed zwróceniem danej przesuwa się indeks miejsca odczytu o 1 z uwzględnieniem ewentualnego zapętlenia na końcu tablicy).
+enqueue - otrzymująca dane do wstawienia do kolejki, po wstawieniu której należy przesunąć indeks miejsca zapisu o 1 z uwzględnieniem ewentualnego zapętlenia na końcu tablicy. Jeżeli po przesunięciu oba indeksy są takie same należy dwukrotnie powiększyć tablicę przez realokację oraz odpowiednio rozsunąć dane - wszystko od od miejsca 'spotkania' indeksów do 'starego' końca tablicy musi być przemieszczone na koniec powiększonej tablicy. Należy pamiętać o odpowiednim uaktualnieniu rozmiaru tablicy oraz indeksu miejsca odczytu.
+W celach testowych przydatne  też będą funkcje/metody:  wypisująca tablicę (wypisująca standardową listę pythonową) i wypisująca kolejkę (w postaci takiej jak lista pythonowa, czyli ciąg wartości w nawiasach [ ]).
+ 
+W main-ie sprawdź działanie zaimplementowanej kolejki przez:
+utworzenie pustej kolejki
+użycie enqueue do wpisana do niej  4 danych - kolejnych liczb od 1 do 4,
+użycie dequeue do odczytu pierwszej wpisanej danej i wypisanie jej
+użycie  peek do odczytu drugiej  wpisanej danej i wypisanie jej
+testowe wypisanie aktualnego stanu kolejki
+użycie enqueue do wpisana do kolejki następnych 4 danych - kolejnych liczb od 5 do 8,
+testowe wypisanie aktualnego stanu tablicy
+opróżnienie kolejki z wypisaniem usuwanych danych (użycie dequeue w pętli dopóki w kolejce będą dane)
+wypisanie kolejki (powinna być pusta)

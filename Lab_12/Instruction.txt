@@ -1,0 +1,290 @@
+1. Wyszukiwanie/dopasowanie wzorca
+
+1. Wprowadzenie
+
+Wyszukiwanie/dopasowanie wzorca tekstu jest ważnym zagadnieniem o dużym znaczeniu praktycznym. Oprócz zastosowań “oczywistych” jak analiza dokumentów, wzorce występują również w chemii czy biologii (np. DNA).
+
+2. Cel
+
+Celem ćwiczenie jest zapoznanie, analiza i implementacja “klasycznych” metod wyszukiwania wzorca:
+metoda naiwna,
+
+metoda Rabina-Karpa
+
+metoda Knutha-Morrisa-Pratta
+
+metoda Rabina-Karpa dla wielu wzorców + filtr Blooma (zadanie dodatkowe)
+
+3. Metoda naiwna
+
+Metoda naiwna to najprostsze podejście do wyszukiwania wzorca. Mając dany tekst S oraz wzorzec W, “przykładamy” wzorzec do początku S i sprawdzamy znak po znaku zgodność obu ciągów. Jeśli wystąpi różnica, to “przesuwamy” początek przeszukania o jeden znak i rozpoczynamy procedurę ponownie. Jeśli natomiast stwierdzimy zgodność obu ciągów, to zapisujemy numer znaku z S, od którego wystąpiła zgodność.
+
+Uwagi do implementacji:
+
+Wczytywanie tekstu - przydatna składnia:
+
+with open("lotr.txt", encoding='utf-8') as f:
+        text = f.readlines()
+
+S = ' '.join(text).lower()
+
+W trzeciej linijce następuje łączenie listy w jeden ciąg znakowy oraz konwersja do małych liter.
+
+Konwencja - proszę indeks w S oznaczyć m, a w W jako i. Pomoże to przy implementacji kolejnych metod.
+Używamy pętli while a nie for (ze względu na kolejne zadanie)
+Od razu dodajemy mierzenie dwóch parametrów:
+         a) czasu wykonania:
+
+         import time
+
+         t_start = time.perf_counter()
+         # testowana metoda
+         t_stop = time.perf_counter()
+         print("Czas obliczeń:", "{:.7f}".format(t_stop - t_start))
+        
+         b) liczby podstawowych operacji (tu: porównań znaków) - tu proszę dobrze umiejscowić inkrementację licznika.
+
+Algorytm oczywiście warto “opakować” w funkcję.
+
+Testujemy jego działanie dla prostego tekstu - wybranego samodzielnie. 
+
+Następnie w wersji finalnej dla tekstu  "lotr.txt" i wzorca "time." proszę wypisać tylko dwie wartości rozdzielone średnikami: liczbę wystąpień wzorca; liczbę porównań znaków. UWAGA: we wzorcu występuje kropka!
+
+Uwaga. Istnieje ulepszony wariant metody naiwnej, który pozwala zmniejszyć liczbę porównań, ale tylko w przypadku, gdy we wzorcu nie ma powtórzeń.
+
+4.  Metoda Rabina-Karpa
+
+Idea polega na wykorzystaniu funkcji skrótu (haszującej, mieszającej). Założenia są następujące:
+jeśli W i podciąg z S są identyczne, to mają taki sam skrót (czyli wartość funkcji mieszającej) i występuje dopasowanie,
+
+jeśli W i podciąg z S są różne, to skrót prawie zawsze różny => jednak może się trafić przypadek, że będzie taki sam, stąd konieczność testowania dopasowań.
+
+Bazujemy na następującym pseudokodzie (Źródło: Wiki):
+function RabinKarp(string S[1..M], string W[1..N])
+
+    hW := hash(W[1..N]);
+
+    for m from 1 to M-N+1
+
+            hS := hash(S[m..m+N-1])
+
+            if hS = hW
+
+                if S[m..m+N-1] = W[1..N]
+
+                    return i
+
+        return not found
+
+Wyliczamy skrót W, następnie w pętli wyliczamy skrót podciągu S i porównujemy oba skróty. Jeśli są takie same, to musimy jeszcze porównać ciągi, aby sprawdzić, czy nie mamy do czynienia z błędem wynikającym z kolizji. Proszę zaimplementować powyższy algorytm, uwzględniając, że stosowana jest tu indeksowanie od 1 a nie od 0 oraz przyjmując:
+
+
+d = 256 
+
+q = 101  # liczba pierwsza
+
+def hash(word):
+    hw = 0
+    for i in range(N):  # N - to długość wzorca
+        hw = (hw*d + ord(word[i])) % q  # dla d będącego potęgą 2 można mnożenie zastąpić shiftem uzyskując pewne przyspieszenie obliczeń
+    return hw
+
+Następnie proszę porównać czas działania i liczbę porównań z metodą naiwną. Jako podstawową operację proszę przyjąć porównywanie wartości funkcji hash.
+
+Można zauważyć, że wartość funkcji has dla dwóch kolejnych podciągów z S różni się tylko o wartości zależne od pierwszej litery pierwszego podciągu i ostatniej drugiego. Podana metoda liczenia funkcji hash ma jednak jedną 'miłą' cechę - je wartość dla drugiego podciągu można także wyliczyć bez wywoływania jej na drugim podciągu (ma ona tzw. własność 'rolling hash'). Wystarczy wziąć jej wartość dla pierwszego podciągu i odjąć wartość zależną od pierwszej litery pierwszego a dodać wartość zależną od ostatniej drugiego, wg wzoru:
+
+hash(S[m+1..m+N]) = (d * (hash(S[m..m+N-1]) - ord(S[m]) * h) + ord(S[m + N])) % q
+
+jeżeli wartość wyjdzie ujemna należy dodać do niej q.
+
+W powyższym wzorze występuje wartość h, którą wylicza się raz, przed wyszukiwaniem wzorca:
+h = 1
+for i in range(N-1):  # N - jak wyżej - długość wzorca
+    h = (h*d) % q 
+
+Proszę porównać czas działania i liczbę porównań z poprzednimi (tymi bez 'rolling hash').
+Proszę poeksperymentować z użytą liczbą pierwszą oraz dodać zliczanie sytuacji, w których ten sam skrót oznaczał różne ciągi.
+
+Na koniec w wersji finalnej dla tekstu  ‘lotr.txt’ i wzorca "time." proszę wypisać tylko trzy wartości rozdzielone średnikami: liczbę wystąpień wzorca; liczbę porównań znaków; liczbę kolizji stosując początkowe 101 jako liczba pierwsza (tylko dla wersji 'rolling hash').
+
+
+5. Metoda Knutha-Morrisa-Pratta (KMP)
+
+Idea (obserwacja) stojąca za metodą KMP, bazując na metodzie naiwnej, polega na wykorzystaniu informacji o już wykonanych porównaniach do “lepszego przesuwania się” w ciągu S - co w praktyce oznacza dobór parametrów m oraz i.
+Bazujemy na następującym pseudokodzie [Wiki]:
+
+algorithm kmp_search:
+    input:
+
+        an array of characters, S (the text to be searched)
+
+        an array of characters, W (the word sought)
+
+    output:
+
+        an array of integers, P (positions in S at which W is found)
+
+        an integer, nP (number of positions)
+
+    define variables:
+
+        an integer, m ← 0 (the position of the current character in S)
+
+        an integer, i ← 0 (the position of the current character in W)
+
+        an array of integers, T (the table, computed elsewhere)
+
+    let nP ← 0
+    while m < length(S) do
+
+        if W[i] = S[m] then
+
+            let m ← m + 1
+
+            let i ← i + 1
+
+            if i = length(W) then
+
+                (occurrence found, if only first occurrence is needed, start ← m - i  may be returned here)
+
+                let P[nP] ← m - i, nP ← nP + 1
+
+                let i ← T[i] (T[length(W)] can't be -1)
+
+        else
+
+            let i ← T[i]
+
+            if i < 0 then
+
+                let m ← m + 1
+
+                let i ← i + 1
+
+Sam algorytm jest dość intuicyjny i działa w takim samym “schemacie” jak naiwny. Różnica to “tajemnicza” tablica T, która określa nam, o ile mamy ew. się “cofnąć” przy przeszukiwaniu ciągu.
+
+Pseudokod obliczania T jest następujący [Wiki]:
+
+algorithm kmp_table:
+    input:
+
+        an array of characters, W (the word to be analyzed)
+
+    output:
+
+        an array of integers, T (the table to be filled)
+
+    define variables:
+        an integer, pos ← 1 (the current position we are computing in T)
+
+        an integer, cnd ← 0 (the zero-based index in W of the next character of the current candidate substring)
+
+    let T[0] ← -1
+    while pos < length(W) do
+
+        if W[pos] = W[cnd] then
+
+            let T[pos] ← T[cnd]
+
+        else
+
+            let T[pos] ← cnd
+
+            while cnd ≥ 0 and W[pos] ≠ W[cnd] do
+
+                let cnd ← T[cnd]
+
+        let pos ← pos + 1, cnd ← cnd + 1
+
+    let T[pos] ← cnd (only needed when all word occurrences are searched)
+Bazując na powyższych informacjach oraz ew. przykładzie na Wikipedii (https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm) proszę zaimplementować algorytm oraz sprawdzić jego poprawność.
+
+Podobnie jak wcześniej należy zmierzyć czas wykonania oraz liczbę porównań. W wersji finalnej dla tekstu  ‘lotr.txt’ i wzorca "time." proszę wypisać tylko dwie wartości rozdzielone średnikami: liczbę wystąpień wzorca; liczbę porównań znaków.
+
+
+2. Wyszukiwanie/dopasowanie wzorca - filtr Blooma (D)
+
+Implementacja algorytmu Rabina-Karpa z wykorzystaniem filtru Blooma
+
+Filtr Blooma
+
+Dotychczas w tekstach wyszukiwany był tylko jeden wzorzec i szybkość wszystkich poznanych metod była porównywalna. Sytuacja zmieni się, jeżeli chcielibyśmy wyszukać kilka (powiedzmy n) wzorców w tym samym tekście. Dla metody naiwnej (a co za tym idzie także dla KMP) konieczne jest n-krotne wyszukiwanie pojedynczego wzorca. Natomiast używając podejścia Rabina-Karpa (dokładnie funkcji skrótu) oraz specjalnej struktury danych - filtru Blooma, proces ten można zrównoleglić.
+
+Wspomniany filtr Blooma to struktura, dzięki której można uzyskać odpowiedź na pytanie, czy dany element należy do pewnego zbioru. Wstawianie i wyszukiwanie w niej elementów jest łatwe, natomiast usuwanie niemożliwe (przynajmniej w typowych, prostych wariantach). Filtr ten jest probabilistyczny. więc może się mylić - występują wykrycia fałszywie pozytywne (ang. false positive), tzn. algorytm może wskazać występowanie elementu, który nie występuje w zbiorze. Analogiczny problem w drugą stronę nie ma miejsca, tzn. jeśli algorytm zwraca informację, że dany element nie występuje w zbiorze, to na pewno go w nim nie ma.
+
+Filtr Blooma to binarna tablica o rozmiarze b, zawierająca na początku same wartości 0. Korzysta z k niezależnych, losowych funkcji haszujących o wartościach z takiego samego przedziału [0,b).  Wynik każdej z funkcji określa miejsce wstawienia 1 do filtru (czyli funkcja haszująca zwraca indeks w filtrze Blooma). Dla każdego wzorca wyznaczanych jest k wartości. W efekcie w filtrze Blooma pojawi się maksymalnie k*liczba_wzorców jedynek (maksymalnie, bo ten sam indeks może być zwrócony przez więcej niż jedną funkcję lub dla więcej niż jednego wzorca).
+
+Sprawdzenie, czy element (np. wycinek tekstu) jest identyczny z którymś ze wzorców polega na obliczeniu wartości k funkcji haszujących i sprawdzeniu wyznaczonych k bitów filtra - jeśli chociaż jeden z nich jest 0, to element na pewno nie należy do zbioru wzorców. W przeciwnym przypadku jest szansa, że element należy do zbioru.
+
+Parametry k i b oraz wybrane funkcje haszujące determinują jakość działania filtru Blooma. Przyspieszenie w stosunku do innych metod z ćwiczenia polega na tym, że wyliczamy tylko k wartości funkcji haszujacych, a sprawdzamy n wzorców.  Im większe n od k tym większy zysk.
+
+Filtr o dobrze dobranych parametrach będzie się bardzo rzadko mylił, aczkolwiek ich właściwy wybór jest dość trudnych zagadnieniem. W ogólności pomaga zwiększenie wymiaru tablicy b (co jednak zajmuje więcej miejsca), a także liczby funkcji haszujących k (jednak z pewnym umiarem). Ważna jest też oczywiście “jakość” funkcji haszujących.
+
+b = 18 (liczba bitów)
+
+k = 3 (liczba funkcji haszujących)
+
+elementy z n-elementowego zbioru {x,y,z} są haszowane przez k funkcji, w następstwie czego ustawiane na 1 są konkretne bity (tu zysk obliczeniowy jet żaden, gdyż k==n, ale chodzi o wyjaśnienie zasady działania, dla większego n rysunek byłby nieczytelny)
+
+sprawdzanie czy w należy do zbioru - haszowanie w przez k funkcji, sprawdzenie stanu poszczególnych bitów
+
+jeden z bitów jest równy 0, zatem w nie należy do zbioru {x,y,z}
+
+detekcja fałszywie pozytywna byłaby wtedy, gdyby w zostało z haszowane do 1 pochodzących z różnych elementów {x,y,z}, przykładowo indeksów 1,3,4 w tablicy na poniższym rysunku
+
+n - liczba elementów w filtrze (liczba wyszukiwanych wzorców)
+
+
+Jeżeli oznaczymy:
+P - jako dopuszczalne prawdopodobieństwo pomyłki, to przyjmując ustalone wartości niektórych parametrów, można wyliczyć:
+
+P = (1 - [1 - 1/b]kn)k
+
+b = - n * ln P / (ln 2)2
+
+k = b/n * ln 2
+
+Daje to możliwość wybrania wartości parametrów filtra w zależności od potrzeb.
+
+Wybór funkcji haszujących to osobny temat. W uproszczeniu możemy przyjąć funkcje jako modulo pewnych liczb pierwszych - wystarczy użyć k takich liczb. Druga opcja to wykorzystanie kombinacji liniowej dwóch funkcji haszujących h1(x) i h2(x). Wtedy możemy wygenerować dodatkowe funkcje g(x) w sposób:
+
+for i in range(k):
+
+    gi(x) = h1(x) + i*h2(x)
+
+W każdym z przypadków wynik każdej funkcji haszujacej musi być 'sprowadzony' do zakresu [0,b) - np. przez zastosowanie modulo b.
+
+
+Implementacja
+
+Zaimplementuj algorytm Rabina-Karpa do wyszukiwania wielu wzorców z wykorzystaniem filtru Blooma. Przyjmij P = 0.001, n = 20, b i k oblicz na podstawie zamieszczonych powyżej wzorów. Dla uproszczenia przyjmij, że wszystkie wzorce mają tę samą długość N (dla chętnych - wyszukiwanie wzorców o różnej długości). Jeśli wzorzec nie został odrzucony przez filtr - sprawdź, czy ciągi faktycznie się zgadzają. 
+Algorytm Rabina-Karpa w tej wersji pozwala bardzo szybko odrzucić miejsca, gdzie na pewno nie ma szukanych ciągów. Wypisz, ile razy pojawiły się dane wzorce. Wypisz także detekcje fałszywie pozytywne oraz ich liczbę.
+
+Jeśli wspomnianych przypadków jest bardzo dużo, możesz zwiększyć rozmiar tablicy b (np. o 50%). Innym rozwiązaniem jest zmiana funkcji haszujących (np. poprzez wybór większych liczb pierwszych).
+
+Zastosuj tzw. rolling hash do liczenia kolejnych wartości skrótów. Możesz się posłużyć wzorem z pierwszego ćwiczenia lub zamiast korzystania ze zmiennej h, liczyć d**(N-1) % q (przypomnienie: N - długość wzorca, q - liczba pierwsza, d - podstawa systemu). Wpisując do tablicy filtru Blooma, pamiętaj o obliczeniu odpowiedniego indeksu.
+
+Pseudokod (źródło: Wikipedia):
+function RabinKarpSet(string S[1..M], set of string subs, N):
+    set hsubs := emptySet #inicjalizacja filtru Blooma
+
+    foreach sub in subs #dla każdego wzorca
+
+        insert hash(sub[1..N]) into hsubs #wyznacz wartości hash i wstaw do tablicy
+
+    hs := hash(S[1..N]) #hash początkowych N elementów z S
+
+    for m from 1 to M-N+1 #okno przesuwne
+
+        if hs ∈ hsubs and S[m..m+N-1] ∈ subs #jeśli hash się zgadza i ciąg jest ten sam
+
+            return m #zwróć indeks
+
+        hs := hash(S[m+1..m+N]) #hash elementów przesuniętych o 1
+
+    return not found
+
+Do weryfikacji algorytmu możesz wykorzystać najpierw własny, prosty tekst, a później plik lotr.txt jak w pierwszym ćwiczeniu. Możesz wyszukiwać elementy własne lub z przykładowego zbioru: 
+['gandalf', 'looking', 'blocked', 'comment', 'pouring', 'finally', 'hundred', 'hobbits', 'however', 'popular', 'nothing', 'enjoyed', 'stuffed', 'relaxed', 'himself', 'present', 'deliver', 'welcome', 'baggins', 'further'].
+
+Sprawdź czas działania dla wyszukiwania jednego wzorca oraz dla n wzorców - czy czas przeszukiwania wzrósł n-krotnie, czy nie? W ramach eksperymentów możesz sprawdzić wpływ różnych parametrów na działanie metody.

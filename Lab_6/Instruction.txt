@@ -1,0 +1,46 @@
+1. Kopcowa implementacja kolejki priorytetowej
+
+Celem ćwiczenia jest implementacja kolejki priorytetowej jako kopca (maksymalnego) zrealizowanego w postaci tablicy. Jako tablicę można wykorzystać listę pythonową (albo z natywną obsługą, albo realokowaną  'ręcznie' jak w zadaniu z tablicą cykliczną). 
+
+Element kolejki niech będzie obiektem klasy, której atrybutami będą dane i priorytet. Ta klasa powinna mieć zdefiniowane 'magiczne' metody pozwalające na użycie na jej obiektach operatorów < i >  oraz wypisanie ich print-em w postaci priorytet : dane.
+Klasa reprezentująca kolejkę powinna zawierać pola przechowujące:  tablicę i  jej aktualny rozmiar (w implementacji używającej standardowej listy pythonowej to pole nie musi wystąpić) oraz następujące metody:
+konstruktor tworzący pustą kolejkę
+is_empty - zwracająca True jeżeli kolejka jest pusta
+peek - zwracająca daną o najwyższym priorytecie (czyli największej wartości atrybutu priorytet)
+dequeue - zwracająca None jeżeli kolejka jest pusta lub daną o najwyższym priorytecie (zdejmując ją z wierzchołka kopca)
+enqueue - otrzymująca dane do wstawienia do kolejki (kopca) wraz z ich priorytetem.
+Dodatkowo, aby usprawnić poruszanie się po kopcu, proszę napisać metody left i right, które otrzymawszy indeks węzła zwracają indeks odpowiednio lewego i prawego potomka, oraz metodę parent, która na podstawie indeksu węzła zwraca indeks jego rodzica.
+
+Należy także utworzyć funkcje/metody:  wypisująca kolejkę jak słownik (elementy tablicy jako pary priorytet : dane rozdzielone przecinkami, całość w nawiasach { }) i wypisująca kolejkę jak drzewo.
+Do wypisania jak słownik  proszę wykorzystać poniższy kod (który można przerobić celem dostosowania do własnej implementacji):
+    def print_tab(self):
+        print ('{', end=' ')
+        for i in range(self.size-1):
+            print(self.tab[i], end = ', ')
+        if self.tab[self.size-1]: print(self.tab[self.size-1] , end = ' ')
+        print( '}')
+
+Do wypisania drzewa proszę wykorzystać poniższy kod (który można przerobić celem dostosowania do własnej implementacji):
+    def print_tree(self, idx, lvl):
+        if idx<self.size:           
+            self.print_tree(self.right(idx), lvl+1)
+            print(2*lvl*'  ', self.tab[idx] if self.tab[idx] else None)           
+            self.print_tree(self.left(idx), lvl+1)
+
+Celem wypisania drzewa należałoby tak wywołać powyższą metodę:
+    kol_prior.print_tree(0, 0);
+
+UWAGA:
+Proszę pamiętać, że w każdej operacji dodania/usunięcia warunek kopca ma zostać zachowany. Przywracanie warunku kopca ma mieć złożoność O(log n),
+czyli nie może polegać na przeglądnięciu wszystkich elementów posiadających potomków (to byłaby złożoność O(n)).
+ 
+W main-ie sprawdź działanie zaimplementowanej kolejki przez:
+utworzenie pustej kolejki
+użycie w pętli enqueue do wpisana do niej elementów których klucze będą brane z listy [4, 7, 6, 7, 5, 2, 2, 1] a odpowiadające im wartości będą kolejnymi literami z napisu "ALGORYTM"
+wypisanie aktualnego stanu kolejki w postaci kopca
+wypisanie aktualnego stanu kolejki w postaci tablicy
+użycie dequeue do odczytu (i wypisania)  pierwszej  danej z kolejki
+użycie  peek do odczytu (i wypisania) kolejnej  danej
+wypisanie aktualnego stanu kolejki w postaci tablicy
+opróżnienie kolejki z wypisaniem usuwanych danych (użycie dequeue w pętli dopóki w kolejce będą dane)
+wypisanie opróżnionej kolejki w postaci tablicy (powinno się wypisać { } )

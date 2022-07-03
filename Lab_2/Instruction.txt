@@ -1,0 +1,87 @@
+1. Implementacja listy wiązanej w Pythonie
+
+Wstęp
+Do wiązania kolejnych elementów w liście jednokierunkowej w języku C naturalnym jest użycie wskaźnika. Czym można zastąpić wskaźnik w języku Python? Być może zaskakującą odpowiedzią jest: dowolną zmienną (czy polem klasy). Pamiętajmy, że 'zmienne' w Pythonie to swego rodzaju 'etykietki' 'przyklejane' do komórek pamięci w praktyce realizowane jako referencje. Tak więc każda zmienna w Pythonie jest rodzajem wskaźnika. Załóżmy, że mamy klasę z polami:
+- data (które możemy to rozumieć jako referencję do danych przechowywanych w liście)
+- next (które możemy to rozumieć jako referencję do następnego elementu listy)
+Wtedy instrukcję:
+element.data = ('Piotr', 'Pawlik')
+można rozumieć nie jako wstawienie do pola data informacji o osobie, ale jako spowodowanie, że pole data wskazuje na informację o osobie.
+Analogicznie (co istotniejsze):
+element.next = nast_element to nie wstawienie elementu do elementu tylko ustawienie next jako wskazanie na następny element.
+
+Właściwe zadanie:
+Zaimplementuj w języku Python listę wiązaną jednokierunkową. Niech będzie ona zaimplementowana jako klasa zawierająca pole head.
+Pole head należy rozumieć jako wskazanie na pierwszy element listy (należy stworzyć drugą , osobną, klasę reprezentującą elementy listy). Pole to powinno być ustawiane w 'konstruktorze' na None (czyli konstruktor będzie odpowiednikiem funkcji tworzącej pustą listę).
+
+Zaimplementuj poniższe funkcjonalności:
+Transformatory:
+• create - tę rolę będzie pełnił 'konstruktor' tworzący obiekt reprezentujący listę z polem head ustawionym na None
+• destroy - usunięcie/zniszczenie całej listy - tu też jest łatwo - wystarczy ustawić head na None, a Python sam zwolni pamięć :)
+• add - metoda dodająca na początek listy
+• remove - metoda usuwająca element z początku listy
+Obserwatory:
+• is_empty - metoda zwracająca True dla pustej listy
+• length - metoda zliczająca liczbę elementów
+• get - metoda zwracająca pierwszy element (tylko dane, bez 'wskaźnika' - wewnętrzna reprezentacja ma być ukryta)
+
+ a także metody pozwalające:
+wypisać listę (nie musi to być __str__ tylko wypisanie listy na ekran, zakładając, że dane z elementu listy da się wypisać print-em)
+dodać element na koniec listy
+usunąć element z końca
+
+
+Dodatkowo uzupełnij klasę o metody:
+take(n) - metoda tworząca nową listę wiązaną z n pierwszych elementów listy (dla n większego od rozmiaru brane są wszystkie elementy)
+drop(n) - metoda tworząca nową listę wiązaną z elementów podanej listy z pominięciem jej pierwszych n elementów (dla n większego od rozmiaru zwracana jest pusta lista)
+Uwaga - kolejność elementów w nowych listach nie powinna zostać odwrócona
+
+W main-ie sprawdź działanie zaimplementowanej klasy przez utworzenie z poniższej pythonowej listy krotek z danymi o uczelniach:
+[('AGH', 'Kraków', 1919),
+('UJ', 'Kraków', 1364),
+('PW', 'Warszawa', 1915),
+('UW', 'Warszawa', 1915),
+('UP', 'Poznań', 1919),
+('PG', 'Gdańsk', 1945)]
+listy wiązanej, przy czym należy użyć wszystkich zaimplementowanych metod.
+
+
+
+
+2. Implementacja listy w oparciu o operacje bazowe (D)
+Wstęp
+Lista w ujęciu rekurencyjnym może posiadać następujące operacje bazowe:
+• nil( ) - stworzenie pustej listy
+• cons(el, list)  - stworzenie listy przez dodanie elementu na początek istniejącej listy
+• first(list) - zwrócenie wartości  pierwszego elementu
+• rest(list) - zwrócenie listy bez pierwszego elementu
+
+Zaimplementuj powyższe operacje korzystając jedynie z klasy opisującej element listy z poprzedniego zadania. Zauważmy, że przypisanie:
+head = nil( ) utworzy listę pustą, następne przypisanie:
+head = cons( nowa_dana, head) doda do pustej jeden element z podaną daną, następne przypisanie:
+head = cons( kolejna_dana, head) doda do listy jednoelementowej kolejny element z koleją daną itd.
+przy czym proszę myśleć o zmiennej head jak o wskaźniku (wskazaniu na pierwszy element listy)
+Tego rodzaju interfejs jest wykorzystywany w językach funkcyjnych.
+
+Zaimplementuj klasyczną listę wiązaną z takimi samymi funkcjonalnościami  jak w zadaniu pierwszym, ale wykorzystując jedynie powyższy interfejs. Czyli:
+nie wolno odwoływać się do klasy opisującej element listy
+zamiast metod będą funkcje
+Wyjątkiem będzie funkcja create, której w zadaniu pierwszym nie było - odpowiadał jej 'konstruktor' klasy. Tu będzie to funkcja jednolinijkowa:
+def create( ):
+    return nil( )
+
+Część pozostałych funkcji też będzie 'jednolinijkowych' (chyba, że zostaną uzupełnione o wyrzucanie wyjątku w przypadku  np. próby operacji na pustej liście). Za to metody, które w zadaniu pierwszym wykorzystywały iteracje tu muszą być funkcjami rekurencyjnymi.
+Przykładowo - dodanie na koniec wymaga rekurencyjnego dojścia do końca listy, dołożenie tam wstawianego elementu funkcją cons i odbudowania listy w powrotach z rekurencji również funkcją cons).  Kod to realizujący mógłby wyglądać następująco:
+def add_end(el, lst):
+    if is_empty(lst):
+        return cons(el, lst)  # dojście do końca i wstawienie tam elementu
+    else:
+        first_el   = first(lst)       # podział listy na: pierwszy element
+        rest_lst  = rest(lst)      # i całą resztę
+        recreated_lst = add_end(el, rest_lst) # 'zejście 'w dół' rekurencji z przekazaniem dodawanego elementu, przy powrocie 'w górę' zwracana jest odtworzona lista
+        return cons(first_el, recreated_lst)   # cons dołącza pierwszy element do 'odtwarzanej' przez rekurencję listy
+                                                                  # zmienne first-el, rest_lst i recreated_lst są wprowadzone pomocniczo, dla wyjaśnienia działania funkcji   
+
+Pozostałe funkcje rekurencyjne będą miały podobną konstrukcję.
+
+Przetestuj funkcje implementujące klasyczną listę analogicznie jak w zadaniu pierwszym (w zasadzie powinien to być taki sam main, tylko zamiast odwołań do metod w klasie powinny być wywołania tak samo nazywających się funkcji)

@@ -1,0 +1,26 @@
+1. Wyznaczanie otoczki wypukłej
+
+Dla pewnego zbioru punktów na płaszczyźnie można wyznaczyć otoczkę wypukłą (ang. convex hull). Jest to najmniejszy wielokąt wypukły, zawierający wszystkie punkty z analizowanego zbioru. W ramach ćwiczenia zaimplementowany zostanie algorytm Jarvisa do wyznaczania wspomnianego wielokąta.
+Algorytm Jarvisa
+
+Idea algorytmu jest bardzo prosta - zaczynamy od skrajnego lewego punktu i “zagarniamy” punkty, przechodząc po zbiorze w kierunku lewoskrętnym. Zatem metoda ta sprowadza się do wyszukiwania “odpowiednich” punktów w kolejnych krokach. Jak to zrobić? Mając dany punkt p, należy znaleźć taki punkt q, że dla wszystkich pozostałych punktów r (p,q,r) jest lewoskrętne.
+Implementacja:
+
+Algorytm realizujemy dla przestrzeni 2D, więc należy zdefiniować punkt, posiadający dwie współrzędne - x i y.
+
+Wyszukaj skrajny lewy punkt. Jeśli więcej niż jeden punkt ma tę samą minimalną współrzędną x, wybierz skrajny dolny punkt. Będzie to punkt poczatkowy i zarazem pierwszy punkt p.
+
+W pętli wykonuj następujące kroki, dopóki nie wrócimy do punktu początkowego:
+
+następny punkt q wybierany jest tak, aby dla dowolnego punktu r (p,q,r) było lewoskrętne. Do tego celu wybierz początkowe q jako kolejny punkt po p. Dalej, przechodząc przez kolejne punkty r, sprawdzamy, czy (p,q,r) jest prawoskrętne. Jeżeli tak, to q jest złym kandydatem (istnieje r - oznaczmy je r - dla którego (p,q,r) nie jest lewoskrętne). Z drugiej strony - jeżeli (p,q,r) jest prawoskrętne, to (p,r,q) jest lewoskrętne i odcinek (p,r) leży bliżej szukanej otoczki niż (p,q) - zatem r jest dobrym nowym kandydatem zastępującym q, gdyż wszystkie dotychczasowe punkty r dla których  (p,q,r) było lewoskrętne  będą także lewoskrętne dla (p, r, r) .  Czyli podstawiamy q=r i kontynuujemy sprawdzanie następnych punktów. Ostatecznie wartość q będzie określała punkt dla którego odcinek (p, q) należy do otoczki.
+
+dodaj punkt q jako następujący po p (np. do listy), aby uzyskać zbiór kolejnych punktów wyznaczających wielokąt na koniec działania algorytmu
+
+wartość q wstaw w miejsce p do kolejnej iteracji
+
+
+Wyznacz punkty należące do wielokąta dla wejściowego zbioru (UWAGA - pierwsza współrzędna to x, druga y): (0, 3), (0, 0), (0, 1), (3, 0), (3, 3), a następnie dla (0, 3), (0, 1), (0, 0), (3, 0), (3, 3). W tej implementacji wyniki powinny być różne, jeśli podamy współliniowe punkty w różnej kolejności.
+
+Potencjalnym rozwiązaniem tego problemu jest wyznaczenie najdalszego współliniowego punktu. Do punktu 3.1 dodaj warunek: jeśli (p,r,q) jest współliniowe i q leży pomiędzy p i r, to w miejsce q wstaw r (czyli wybierz dalszy współliniowy punkt). Sprawdź ponownie wyniki dla obu zbiorów - tym razem powinny być identyczne.
+
+Na koniec wypisz wyniki obu wersji algorytmu dla zbioru: (2, 2), (4, 3), (5, 4), (0, 3), (0, 2), (0, 0), (2, 1), (2, 0), (4, 0).

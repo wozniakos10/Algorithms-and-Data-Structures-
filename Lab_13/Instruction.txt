@@ -1,0 +1,177 @@
+1. Programowanie dynamiczne - aplikacje tekstowe
+1. Wprowadzenie
+
+Programowanie dynamiczne (PD) jest techniką efektywnej implementacji algorytmów rekurencyjnych, która opiera się na zapamiętywaniu wyników częściowych. 
+W ramach ćwiczenia w języku Python:
+
+zaimplementowany zostanie algorytm aproksymowanego dopasowania ciągu,
+
+zademonstrowane zostaną drzewa i tablice sufiksowe (zadanie domowe).
+
+
+2. Implementacja aproksymowanego dopasowania ciągu znakowego (approximate string matching) z wykorzystaniem PD
+
+Idea: wyznaczanie dopasowań niedokładnych polega na określeniu funkcji kosztu, która określi jak bardzo dwa ciągi różnią się od siebie (w pewnym sensie miara odległości). Miara ta powinna uwzględniać liczbę zmian jakie trzeba wykonać, aby z ciągu A uzyskać ciąg B.
+
+Typy zmian:
+
+podstawienia - np. “shot” -> “spot”
+
+wstawienia - np. “ago” -> “agog”
+
+usunięcia - np. “hour” -> “our”
+
+(czasem) transpozycja - np. “cost” -> “cots”
+
+Jeśli każdej ze zmian przypiszemy koszt ‘1’ (przykładowo), to uzyskamy “odległość edycji” (edit distance) pomiędzy dwoma ciągami.
+
+
+Obserwacja - ostatni znak może być: dopasowany, zamieniony, usunięty lub dodany. Jak już to ustalimy, to mamy parę krótszych ciągów P i T. Niech i to indeks ostatniego znaku z P, a j z T. Po wymienionej operacji mamy 3 potencjalne pary P i T:
+
+dopasowanie/podstawienie
+
+usunięcie
+
+dodanie
+
+Jeśli teraz dla nich wyznaczymy koszt, to postępując tak dalej, możemy poznać najlepsze rozwiązanie (o najmniejszym koszcie). Zatem nasz problem jest rekurencyjny.
+
+
+Niech D[i,j] będzie minimalną liczbą różnic pomiędzy P1, P2, P3….Pi /wzorzec/, a podciągiem T /tekst/ kończącym się w j. D[i,j] to minimum z trzech możliwości rozszerzenia krótszych ciągów:
+
+Jeśli (Pi = Tj) wtedy D[i-1,j-1], inaczej D[i-1,j-1] + 1. Oznacza to, że albo znaki są takie same, albo dokonujemy zamiany,
+
+D[i-1,j] +1. Oznacza to, że we wzorcu mamy jeden znak więcej. Wskaźnik j (tekstu) pozostaje bez zmian oraz ponosimy koszt dodania jednego znaku,
+
+D[i,j-1] +1 Oznacza to, że w tekście mamy jeden znak więcej. Wskaźnik i (wzorca) pozostaje bez zmian, a z tekstu usuwamy jeden znak.
+
+
+Zadanie. Zaimplementować algorytm dopasowania aproksymowanego w dwóch wariantach - rekurencyjnym oraz PD. Porównać wydajność. Dodać funkcjonalność rekonstrukcji wykonanych operacji. Wprowadzić i zademonstrować trzy modyfikacje:
+
+dopasowanie podciągów
+
+najdłuższy wspólny podciąg
+
+najdłuższy podciąg monotoniczny
+
+
+Podpowiedzi:
+
+a) wariant rekurencyjny
+
+
+int string_compare(char *P, char *T, int i, int j) {
+    if (i == 0 ) return liczba_pozostałych_znaków_w_T
+    if (j == 0 ) return liczba_pozostałych_znaków_w_P
+    zamian    = string_compare(P,T,i-1,j-1) + (P[i]!=T[j]);
+    wstawień = string_compare(P,T,i,j-1) + 1;
+    usunięć   = string_compare(P,T,i-1,j) + 1;
+ 
+    najniższy_koszt = najmiejsza_z(zamian, wstawień, usunięć)
+   
+    return najniższy_koszt
+    }
+
+Działanie można sprawdzić na ciągach (proszę zwrócić uwagę na spację z przodu):
+P = ' kot'
+T = ' koń'
+
+P = ' kot'
+T = ' pies'
+
+Dla cierpliwych:
+
+P = ' biały autobus'
+T = ' czarny autokar'
+
+Proszę sprawdzić poprawność wyznaczania kosztu i dodać pomiar czasu obliczeń.
+
+W 'rozwiązaniu' proszę usunąć liczenie czasu i wypisać najmniejszy koszt przykładu z kotem i psem.
+
+b) wariant PD
+
+Skąd wiemy, że PD może być lepsze? Bo algorytm wielokrotnie oblicza te same wyniki. Dlaczego? - może być tylko |P|x|T| różnych wywołań rekurencyjnych, bo tylko tyle mamy różnych par (i,j), które są argumentem tego wywołania. Zatem możemy te pary zapisać (wyniki) i wykorzystać, a nie obliczać za każdym razem.
+
+
+Jak przejść od wersji rekurencyjnej do PD?:
+skopiować kod :)
+zamiast warunków kończących rekurencję należy zainicjować zerami dwuwymiarową tablicę do pamiętania najmniejszych kosztów (niech nazywa się D). Wypełnijmy ją zerami za wyjątkiem pierwszego rzędu i pierwszej kolumny, gdzie powinny znaleźć się kolejne liczby (od 0 do długość_napisu-1)
+ponadto przyda nam się dodatkowa tablica 'rodziców' (także dwuwymiarowa), dzięki której można odtworzyć operacje dokonywane na literach porównywanych napisów. Może ona zawierać litery, którymi oznaczymy: I - wstawienie znaku, D - usunięcie znaku, S -zamiana znaków, M - litery są zgodne.  Na początek trzeba wypełnić tę tablicę znakami oznaczającymi wartość nieokreśloną (np X), natomiast jej pierwszy rząd literami I a pierwszą kolumnę literami  D (jednak element (0,0) ma pozostać nieoznaczony - X)
+zamiast wywołań rekurencyjnych realizujemy dwie pętle for, a samo wywołanie zastępujemy odwołaniem do tablicty D, przykładowo":
+                   zamian = D[i-1][j-1] + (P[i]!=T[j])
+
+wyliczamy najniższy koszt i umieszczamy go w tablicy D. Do tablicy rodziców wpisujemy operację która dała najniższy koszt - jeżeli była to zamiana, to trzeba sprawdzić czy doszło do zamiany (wtedy wpisujemy S) czy też znaki się zgadzają (wpisujemy M).
+Szukany koszt to ostatnia wartość w tablicy D (czyli koszt dla ostatnich liter obu napisów)
+
+Na tym etapie kod można uruchomić i sprawdzić, czy wyniki są takie same jak dla wersji rekurencyjnej. Należy też dodać pomiar czasu.
+
+W 'rozwiązaniu' proszę usunąć liczenie czasu i wypisać najmniejszy koszt przykładu z autobusami.
+
+c) odtwarzanie ścieżki
+
+Opisana funkcja zwraca nam koszt, ale nie samo przekształcenie. Jednak informacja o przekształceniu jest zawarta w macierzy programowania dynamicznego (w postaci ścieżki) i można ją “odtworzyć”. Sprowadza się to do “odtworzenia” decyzji podejmowanych w każdym kroku - zapisaliśmy je w tablicy 'rodziców' . Zaczynamy “od końca” i cofamy się do początku, do momentu, aż nie dojdziemy do znaku określającego wartość nieoznaczoną (proponowany X).
+W każdej iteracji cofamy albo i, albo j albo oba te indeksy, w zależności jaka była operacja wpisana do tablicy rodziców (np. dla zamian - M lub S -  cofamy oba indeksy). W trakcie przechodzenia zapamiętujemy operacje (D,I,M lub S) w liście, którą na koniec odwracamy i przerabiamy na napis  - to będzie wynik naszej funkcji odtwarzającej ścieżkę.
+
+Proszę otworzyć ścieżkę dla porównywanych ciągów i przeanalizować wynik. Przykładowo dla ciągów:
+
+P = ' thou shalt not'
+T = ' you should not'
+
+Wynik powinien być: "DSMMMMMISMSMMMM"
+
+W 'rozwiązaniu' proszę wypisać napis reprezentujący ścieżkę (czyli powinno pojawić się to co powyżej).
+
+
+
+d) dopasowanie podciągów - chcemy znaleźć gdzie krótki wzorzec P występuje (jego najlepsze dopasowanie) w długim tekście T, np.:
+P = ' ban'
+T = ' mokeyssbanana'
+
+Pozwalają na to następujące zmiany:
+
+Przy inicjowaniu tablicy D pierwszy rząd zostawiamy ustawiony na zero, i podobnie w tablicy rodziców pierwszy rząd ma zawierać X (wartość nieoznaczoną)
+
+Dodatkowo musimy wyliczyć 'punkt startowy' procedury odtwarzania ścieżki (w funkcji string_compare na podstawie wypełnionej tablicy D - czyli po pętlach). W C moglibyśmy ją zapisać tak:
+
+goal_cell(char *P, char *T, int *i, int *j) {
+   *i = strlen(P)-1;
+   *j = 0;
+   for (int k=1; k <strlen(T); k++)
+        if ( D[*i][k] < D[*i][*j] )
+                *j = k;
+   }
+
+W praktyce chodzi o znalezienie pozycji (indeksu) najmniejszej wartości w ostatnim wierszu tablicy D. Proszę dodatkowo zwracać ten indeks - powinien to być indeks ostatniej litery wyszukiwanego wzorca w przeszukiwanym napisie.
+
+Proszę sprawdzić, czy rozwiązanie działa (uwaga - nie kasować oryginalnego kodu, tylko stworzyć nową funkcję lub dodać parametr do string_compare).
+Proszę sprawdzić, czy podobnie dobrze zostanie znaleziony najbardziej podobny (ale nie identyczny) podciąg. Proszę zastąpić słówko 'ban' słówkiem 'bin'
+
+W 'rozwiązaniu' proszę wypisać indeks w przeszukiwanym tekście, pod którym zaczyna się szukany podciąg.
+
+e) najdłuższa wspólna sekwencja
+
+Wspólna sekwencja dwóch napisów to ciąg liter występujących w obu z nich, niekoniecznie obok siebie (ale z zachowaniem kolejności). Mała modyfikacja naszej metody pozwala wykryć najdłuższą taką sekwencję (lub jedną z kilku o tej samej, największej długości).
+ 
+Zmiana (w stosunku do wersji bazowej, nie z dopasowania podciągów) - blokujemy możliwość zamian zwiększając ich koszt. W linii:
+
+  zamian[i,j] = D[i-1][j-1] + (P[i]!=T[j])
+
+zamiast (P[i]!=T[j]) trzeba dodać jakąś dużą liczbę pod warunkiem, że litery są różne (jak są takie same nic nie dodajemy).
+
+Test:
+P = ' democrat'
+T = ' republican'
+
+Wynik: ‘eca’.
+
+W 'rozwiązaniu' proszę wypisać napis reprezentujący wspólną sekwencję (czyli powinno pojawić się to co powyżej) uzyskany na podstawie odtworzonej ścieżki (proszę się zastanowić jak go uzyskać).
+
+f) najdłuższa podsekwencja monotoniczna
+
+Najdłuższa podsekwencja ciągu np. cyfr to najdłuższa sekwencja cyfr z tego ciągu, w której wartości są uporządkowane rosnąco (czyli, tak jak poprzednim podpunkcie:  cyfry nie muszą leżeć koło siebie, ale ich kolejność ma być zachowana) .
+Można do tego wykorzystać algorytm z poprzedniego podpunktu szukając najdłuższej wspólnej sekwencji danego ciągu oraz ciągu złożonego z tych samych wartości, ale posortowanych.
+
+Proszę znaleźć najdłuższą podsekwencję monotoniczną w napisie:
+T = ' 243517698'
+tworząc wzorzec P przez  posortowanie T (ale niech to też będzie napis zaczynający się od spacji).
+W 'rozwiązaniu' proszę wypisać znalezioną najdłuższą podsekwencję.

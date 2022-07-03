@@ -1,0 +1,73 @@
+1. Implementacja macierzy w Pythonie:
+
+Zaimplementuj w języku Python tablicę dwuwymiarową (macierz), do której dostęp będzie można zrealizować jak np. w języku C, czyli:
+nazwa_tablicy[nr_wiersza][nr_kolumny]
+Zaimplementowany typ danych powinien pozwalać na operacje dodawania (operatorem +)  i mnożenia, w znaczeniu mnożenia macierzowego (operatorem *)
+Wykorzystaj w tym celu klasę.  Dla przypomnienia - specjalne (tzw. magiczne) metody definiujące odpowiednie operatory to:
+__add__ - definiuje +
+__mul__ - definiuje *
+__getitem__ - definiuje [ ]
+Dodatkowo proszę zapewnić możliwość wypisania macierzy (wierszami) przez funkcję print poprzez zdefiniowanie metody __str__
+Klasa powinna też mieć metodę size zwracającą liczbę wierszy i liczbę kolumn (ALTRNTYWNIE: powinna zostać zaimplementowana metoda __len__)
+W operacjach dodawania i mnożenia proszę sprawdzać czy macierze mają odpowiednie rozmiary. Wynikiem tych operacji powinien być nowy obiekt.
+
+Sama macierz może być reprezentowana w postaci listy list, przy czym pole wewnętrznie reprezentujące macierz  (czyli np. ta lista list) ma być prywatne dla klasy. 
+Należy zaimplementować 'konstruktor', który stworzy macierz (obiekt tworzonej klasy) na dwa sposoby:
+albo otrzyma on jako argument krotkę  zawierającą oba rozmiary macierzy 
+albo otrzyma wprost listę list wypełnioną wartościami.
+Można wykorzystać  isinstance do sprawdzenia czy argument jest typu tuple, a przeciwnym wypadku założyć, że 'konstruktor' otrzymał w argumencie poprawną listę list.
+Niech 'konstruktor' posiada także domyślny parametr (o wartości 0) wykorzystywany do wypełniania stałą wartością macierzy tworzonej przez podanie jej rozmiarów.
+
+Napisz osobną funkcję (NIE metodę klasy, aby nie korzystać z wewnętrznej reprezentacji macierzy) transponującą macierz. Niech ta funkcja otrzymuje macierz i zwraca macierz po transpozycji.
+
+W main-ie sprawdz działanie zaimplementowanej klasy przez wykonanie i wyświetlenie wyniku transpozycji macierzy:
+[ [1, 0, 2],
+  [-1, 3, 1] ]
+sumowania jej z macierzą:
+[ [1, 1, 1],
+  [1, 1, 1] ] utworzoną przez podanie rozmiarów macierzy (czyli drugim 'konstruktorem')
+oraz mnożenia jej przez macierz:
+[ [3, 1],
+  [2, 1],
+  [1, 0]]
+  
+  
+2. Liczenie wyznacznika macierzy metodą Chio (D)
+W tej metodzie obliczenie wyznacznika macierzy kwadratowej o rozmiarze nxn (gdzie n>2) można sprowadzić do obliczenia wyznacznika macierzy o rozmiarze (n-1)x(n-1), której elementami są wartości 
+wyznaczników macierzy 2x2 powstałych z odpowiednich elementów macierzy nxn (które już dają się trywialnie policzyć - liczenie 'na krzyż'). Powstaje tu klasyczny schemat obliczeń rekurencyjnych (obliczenie dla n wyraża się za pomocą obliczenia dla n-1). Zaimplementuj metodę Chio korzystając z reprezentacji macierzy w postaci klasy stworzonej w ćwiczeniu 1 oraz z poniższego wzoru:
+
+
+[ze strony: https://matematyka.pl/viewtopic.php?t=360950]
+
+Sprawdź wynik dla przykładowej macierzy:
+[
+
+[5 , 1 , 1 , 2 , 3],
+
+[4 , 2 , 1 , 7 , 3],
+
+[2 , 1 , 2 , 4 , 7],
+
+[9 , 1 , 0 , 7 , 0],
+
+[1 , 4 , 7 , 2 , 2]
+
+]
+
+(wynik: -1396)
+
+
+
+Zaproponuj i zaimplementuj rozwiązanie problemu przy liczeniu wyznacznika macierzy typu:
+  [
+     [0 , 1 , 1 , 2 , 3],
+     [4 , 2 , 1 , 7 , 3],
+     [2 , 1 , 2 , 4 , 7],
+     [9 , 1 , 0 , 7 , 0],
+     [1 , 4 , 7 , 2 , 2]
+    ]
+
+(wynik: -236)
+
+
+

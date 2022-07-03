@@ -1,0 +1,90 @@
+1. Sortowanie przez kopcowanie oraz wybieranie
+
+Celem ćwiczenia jest implementacja dwóch metod sortowania - przez kopcowanie (ang. heapsort) oraz przez wybieranie (ang. selection sort).
+
+
+
+==============================
+
+
+
+1. Możliwym sposobem wykorzystania kopca do posortowania tablicy  jest  wstawienie danych z nieposortowanej tablicy do kopca, a następnie zdejmowanie ich z wierzchołka i wstawianie z powrotem  do tablicy, która w ten sposób zostanie posortowana.
+
+To podejście wymaga jednak dodatkowej pamięci na kopiec. W tym ćwiczeniu spróbujemy dokonać sortowania kopcowego w miejscu. Do tego wykorzystamy kod napisany w ćwiczeniu dotyczącym kolejki priorytetowej. Napisane do tej pory metody będą wymagały jedynie niewielkich zmian.
+Po pierwsze - utworzenie kopca z nieposortowanej tablicy:  
+Już powinniśmy dysponować metodą naprawiającą kopiec przesuwającą korzeń w dół drzewa (używaną w dequeue). Wystarczy ją wywołać dla wszystkich węzłów nie będących liśćmi, co spowoduje ich przesunięcie we właściwe miejsce kopca. Należy jednak zachować kolejność: od ostatniego elementu, który nie jest liściem (czyli rodzica ostatniego elementu tablicy), aż do korzenia.
+Po drugie - utworzenie tablicy z kopca:
+W zasadzie już mamy kod, który to realizuje - usuwając korzeń przemieszczamy go na ostatnią pozycję w kopcu (o ostatni przemieszczany w jego miejsce). Jednakże zapewne większość z Państwa ten element fizycznie usuwała z tablicy (np. metodą pop). Gdyby tego nie robić, to po 'usunięciu' wszystkich elementów z kopca dostaniemy posortowaną tablicę (jeżeli w kopcu wyższy priorytet był wyżej, to uzyskamy tablicę posortowaną rosnąco - na końcu wyląduje element największy, potem coraz mniejsze). Tak więc należy (jeżeli jest taka potrzeba) tak zmodyfikować metodę dequeue, żeby nie usuwała ostatniego elementu. Ponadto size w kopcu nie może zależeć od rozmiaru tablicy ale musi być 'ręcznie' zwiększany  w enqueue i zmniejszany w dequeue.
+Na koniec proszę o uzupełnienie konstruktora klasy reprezentującej kopiec o parametr zawierający listę elementów do posortowania (jako parametr z wartością domyślną None). Jeżeli konstruktor zostanie zawołany z argumentem powinien on z przekazanej listy utworzyć kopiec przez zawołanie niżej opisanej metody heapify.
+
+Napisz metodę heapify, która z otrzymanej tablicy wejściowej zbuduje kopiec w sposób opisany powyżej.
+Niech dana będzie lista z danymi:
+Dla tablicy: [(5,'A'), (5,'B'), (7,'C'), (2,'D'), (5,'E'), (1,'F'), (7,'G'), (5,'H'), (1,'I'), (2,'J')]
+Stwórz na jej podstawie listę (tablicę), której elementy są obiektami klasy, zawierającą wartość (klucz/priorytet) i daną oraz metody magiczne < i > (tak jak w kolejce priorytetowej). Przekaż tę tablicę jako parametr przy tworzeniu kopca.
+Wypisz utworzony kopiec jako tablicę i jako drzewo 2D, a następnie, po rozłożeniu kopca, wypisz posortowaną tablicę. Zaobserwuj, czy sortowanie jest stabilne, tzn. czy kolejność elementów o tym samym priorytecie zostanie zachowana (w porównaniu z ich kolejnością w  tablicy wejściowej).
+
+
+Drugi test: Wygeneruj losowo 10000 liczb w przedziale od 0 do 99 i wpisz je do tablicy. Wypisz czas sortowania takiej tablicy. W celu realizacji tego zadania  należy zaimportować moduły random i time.  Do generowania liczb można wykorzystać zapis int(random.random() * 100) powodujący wylosowanie liczby całkowitej z zakresu 0-99, natomiast do pomiaru czasu można zaadaptować kod:
+
+t_start = time.perf_counter()
+# testowana metoda
+t_stop = time.perf_counter()
+print("Czas obliczeń:", "{:.7f}".format(t_stop - t_start))
+
+==============================
+
+2. Drugim algorytmem do zrealizowania jest sortowanie przez wybieranie.
+
+ Napisz dwie metody sortujące pythonową listę algorytmem przez wybieranie: jedną, wykorzystującą zamianę miejscami elementów (swap), i drugą, wykorzystującą przesunięcie elementów (shift). W tym drugim wypadku shift można osiągnąć przez pop i insert.
+Dla listy: [(5,'A'), (5,'B'), (7,'C'), (2,'D'), (5,'E'), (1,'F'), (7,'G'), (5,'H'), (1,'I'), (2,'J')] sprawdź działanie obu metod sortowania przez wybieranie i porównaj wyniki (stwórz z listy tablicę elementów jak w poprzednim zadaniu). Zaobserwuj stabilność obu wersji algorytmu sortującego.
+
+Drugi test: Wygeneruj losowo 10000 liczb w przedziale od 0 do 1000, którymi wypełnisz tablicę. Wypisz czasy sortowania takiej tablicy I porównaj z czasem sortowania kopcowego.
+
+
+2. Sortowanie metodą Shella i mediana median (D)
+
+Celem zadania jest implementacja dwóch algorytmów sortowania - metodą Shella (ang. Shellsort) oraz sortowanie szybkie (ang. quicksort) z wykorzystaniem mediany median, znanej także jako algorytm magicznych piątek.
+
+
+
+==============================
+
+
+
+1. Sortowanie metodą Shella to w pewnym sensie uogólniona metoda sortowania przez wstawianie (ang. insertion sort). W wersji "zwykłej" elementy przesuwane są o 1 pozycję aż trafią na odpowiednie miejsce.
+
+W metodzie Shella możliwe jest przesuwanie elementów położonych dalej od siebie, co zmniejsza liczbę operacji i zwiększa efektywność działania. Zamiast przesuwania elementów lepiej może się sprawdzić swapowanie. Zamiast sprawdzania i przesuwania o 1 element poruszamy się co h elementów. Taka operacja powinna być powtórzona h razy (czyli startujemy po kolei z pierwszych h elementów, rozpatrując za każdym razem co h-ty element). Po wykonaniu wszystkich h przebiegów wartość h jest zmniejszana i cały proces powtarzany, aż do momentu, gdy h osiągnie wartość 1 (to będzie ostatnie powtórzenie).
+
+Istotnym czynnikiem, świadczącym o efektywności metody Shella, jest dobór odpowiednich odstępów h. Niestety, znalezienie optymalnych wartości jest bardzo trudnym zadaniem. W pierwotnej propozycji shella h zaczynało od wartości N//2 i było zmniejszane również dwukrotnie - zacznij od tej implementacji.
+
+Lepszym wyborem początkowej wartości h może być największa wartość (3k-1)/2, mniejsza od N/3, gdzie N to liczba elementów w zbiorze. Mniejsze odstępy h otrzymujemy poprzez całkowitoliczbowe dzielenie poprzedniej wartości h przez 3.
+
+Wygeneruj 10000 losowych elementów (o wartościach od 0 do 99), którymi wypełnisz wejściową tablicę. Wykonaj sortowanie metodą Shella. Porównaj i wyświetl czas wykonania względem "zwykłego" insertion sort. Porównaj także ten czas  z czasem wykonania sortowania kopcowego.
+
+
+
+==============================
+
+
+2. W algorytmie sortowania szybkiego wybierany jest element, względem którego dokonuje się podziału tablicy na dwie – wierającą elementy mniejsze oraz większe od wybranego. Tę procedurę powtarza się na obu częściach tablicy w sposób rekurencyjny, aż do otrzymania pojedynczych elementów w powstałych w ten sposób tablicach (które rzecz jasna są posortowane). Taki algorytm ma średnią złożoność obliczeniową rzędu O(n log n). Może się jednak zdarzyć przypadek bardzo niekorzystny, w którym wybierany będzie element największy/najmniejszy. W takiej sytuacji jedna z nowo tworzonych tablic będzie miała rozmiar o 1 mniejszy od tablicy dzielonej. W ogólnym przypadku może być zatem konieczne n-1 wywołań funkcji, gdzie n to liczba elementów do posortowania. Złożoność obliczeniowa w pesymistycznym przypadku pogarsza się do O(n2).
+
+Rozwiązaniem tego problemu, zapobiegającym pogorszeniu klasy złożoności problemu, jest wybór „właściwego” elementu, względem którego realizowany jest podział tablicy. Można do tego celu zastosować algorytm magicznych piątek, znany także jako mediana median.
+
+Zanim przejdziemy do jego opisu skupmy się na chwilę na klasycznym algorytmie szybkim. Jest on dość prosty do wyrażenia 'słownego' przysparza jednak trochę problemów w momencie, kiedy trzeba wyznaczyć granicę obu części, dla któych metoda ma być powtórzona. Pewnym ułatwieniem jest wybór zawsze pierwszego lub ostatniego elementu dzielącego - ale nasza poprawka ma właśnie wybierać element dzielący, co komplikuje wyznaczanie granicy. Dlatego proponuję stworzyć wersję quicksort, która nie działa w miejscu, ale za to jest bardzo prosta w implementacji. Sortowaną listę dzielimy na trzy listy zawierające: elementy większe od elementu dzielącego,  elementy mniejsze od niego oraz elementy równe dzielącemu. Wystarczy, że funkcja sortująca zwróci listę będącą konkatenacją  wyniku rekurencyjnego wywołania quicksort-a dla pierwszej z list, trzeciej listy oraz wyniku rekurencyjnego wywołania quicksort-a dla drugiej listy. Elementem dzielącym może być pierwszy element sortowanej listy.
+
+Po zaimplementowaniu quicksorta i sprawdzeniu poprawności jego działania przejdźmy do algorytmu wyznaczania lepszego elementu dzielącego. W tym celu listę należy podzielić na listy 5-elementowe (ostatnia może być niepełna), z których dla każdej wyznaczana jest mediana (dotyczy to także ostatniej, ewentualnie krótszej listy). Wyznaczone mediany umieszczane są w liście, dla której powyższa procedura jest powtarzana. Ostatecznie otrzyma się listę jednoelementową zawierającą wartość stanowiącą dobry element do dokonania podziału.
+
+W powyższym algorytmie trudność może sprawić szybkie wyznaczenie mediany z 5-ciu (i mniej) elementów. Można tego dokonać stosując kilka porównań. Poniższy kod realizuje medianę z 5-ciu i 3-ch. Pozostałe przypadki proszę zaimplementować samodzielnie.
+
+def median_3(a, b, c):
+    return max(min(a,b),min(c,max(a,b)))
+
+def median_5(a, b, c, d, e):
+      f=max(min(a,b),min(c,d)) # usuwa najmniejsza z 4
+      g=min(max(a,b),max(c,d)) # usuwa największą z 4
+      return median_3(e,f,g)
+
+Po implementacji sprawdź, czy uzyskiwane są identyczne rezultaty dla obu wersji quicksorta (klasycznej i magicznych piątek).
+
+Podobnie jak w poprzednim ćwiczeniu wygeneruj 10000 losowych elementów (o wartościach od 0 do 99), którymi wypełnisz wejściową tablicę. Wykonaj sortowanie oboma metodami i porównaj  czas ich  wykonania.
+

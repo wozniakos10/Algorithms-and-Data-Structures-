@@ -1,0 +1,133 @@
+1. Problem maksymalnego przepływu - metoda Forda-Fulkersona
+1. Wprowadzenie
+
+Problem maksymalnego przepływu polega na znalezieniu dla danej sieci przepływowej dopuszczalnego przepływu o maksymalnej wartości.
+Sieć przepływowa to graf skierowany, w którym każda krawędź ma nieujemną przepustowość oraz występują dwa specjalne wierzchołki s i t.
+Twierdzenie maksymalny przepływ/minimalne cięcie mówi, że w sieci przepływowej maksymalna wartość przepływu od źródła (source - s) do ujścia (sink - t) równa się łącznej wadze krawędzi w minimalnym cięciu, tzn. najmniejszej łącznej wadze krawędzi, która spowoduje oddzielenie źródła od ujścia. 
+
+
+2. Cel ćwiczenia
+
+dostosowanie struktury danych opisującej graf do algorytmów FF/EK
+implementacja algorytmów FF/EK i testy dla wybranych grafów skierowanych:
+
+przeszukiwanie BFS
+
+analiza ścieżki, obliczanie przepływu
+
+augmentacja ścieżki
+
+zastosowanie twierdzenia max flow/min cut
+
+segmentacja obrazów z wykorzystaniem metody min-cut [zadanie dodatkowe]
+
+
+3. Modyfikacja struktury danych
+
+Koncepcja: potrzebujemy lepszego opisu krawędzi. Oprócz wagi (tu pojemności/przepustowości - capacity), konieczne jest jeszcze przechowywanie informacji o aktualnym przepływie (flow) , przepływie resztowym (residual) oraz flagi isResidual, mówiącej o tym, czy krawędź jest “rzeczywista” czy “resztowa”.
+
+Implementacja (propozycja):
+
+utworzyć klasę (np. Edge) z wymienionymi atrybutami, w której __init__ otrzyma pojemność i informację czy krawędź jest "resztowa". W krawędzi "nie resztowej" początkowy przepływ resztowy jest inicjowany wartością pojemności, a początkowy przepływ ustawiany na 0.W krawędzi "resztowej" początkowy przepływ resztowy jest wyzerowany (przepływ 'flow' nie jest używany).
+
+umożliwić wypisanie krawędzi printem (metoda __repr__ umieszczjąca w napisie, rozdzielone spacjami: pojemność, przepływ, przepływ resztowy i informację True lub False - czy krawędź jest resztowa).
+
+
+4. Wczytywanie grafu
+
+Podczas wczytywania grafu postępujemy podobnie jak poprzednim ćwiczeniu: dodajemy dwa wierzchołki, które łączy wczytana krawędź, oraz samą krawędź. Podana przy krawędzi liczba oznacza pojemność (która zainicjuje wartość przepływu resztowego). Ponadto dodajemy drugą krawędź łączącą wierzchołki w przeciwną stronę - ta krawędź resztowa początkowy przepływ resztowy ma  wyzerowany oraz ma ustawioną flagę, że jest resztowa.
+Uwaga. Opisane rozwiązanie nie jest jedyne i na pewno nie najlepsze. Jeśli propozycja “nie pasuje” do używanej reprezentacji grafu - proszę dostosować algorytm. Tym niemniej “jawne” dodanie krawędzi resztowych upraszcza implementację przeszukiwania grafu oraz na pewno jest łatwiejsze do interpretacji.
+
+Po wczytaniu warto dla sprawdzenia wypisać graf funkcją printGraph (z poprzednich zajęć).
+
+
+5. Przeszukiwanie wszerz - BFS (ang. Breadth First Search)
+
+Wykorzystamy tu algorytm przechodzenia grafu wszerz (BFS). Dodatkowo, ponieważ konieczna jest możliwość prześledzenia ścieżki przejścia, będziemy zapisywać rodzica każdego wybranego wierzchołka.
+
+Skrócony opis:
+
+inicjalizacja
+
+tworzymy i inicjujemy tablice visited i parent o rozmiarze równym liczbie wierzchołków oraz tworzymy kolejkę (lista w Pythonie),
+
+do kolejki dodajemy punkt startowy (indeks początkowego wierzchołka) oraz oznaczamy go jako odwiedzony (w tablicy visited)
+
+w pętli while z warunkiem niepustej kolejki:
+
+pobierz element z kolejki,
+
+pobierz jego sąsiadów,
+
+w pętli po sąsiadach sprawdź, czy wierzchołki nie były odwiedzone oraz czy przepływ resztowy jest większy od 0 (uwaga - to jest “niestandardowy” warunek). Jeśli tak, to dodaj sąsiada do kolejki, oznacz jako odwiedzonego oraz zapisz jego rodzica (czyli element, który zdjęliśmy z kolejki)
+
+Całość “pakujemy” w funkcję (ew. element klasy), który zwraca listę parent.
+
+
+6. Analiza ścieżki, obliczanie najmniejszej pojemności.
+
+Koncepcja: Na wejściu dostajemy graf, wierzchołek początkowy, wierzchołek końcowy oraz listę parent. Na tej podstawie należy odtworzyć ścieżkę oraz wyznaczyć maksymalny przepływ przez ścieżkę, czyli najmniejszą pojemność krawędzi (tzw. wąskie gardło).
+
+
+Implementacja:
+
+potrzebujemy dwóch zmiennych przechowujących:  indeks bieżącego wierzchołka oraz najmniejszą pojemność. Pierwszą inicjujemy indeksem  wierzchołka końcowego, a drugą -  “dużą liczbą” np. float(‘Inf’),
+
+na początku sprawdzamy, czy wierzchołek końcowy ma rodzica (co w praktyce oznacza, że w danej iteracji istnieje do niego ścieżka i metoda BFS do niego “dotarła”). Jeśli nie, to zwracamy wartość przepływu 0.
+
+w przeciwnym przypadku, w pętli while, dopóki nie dotarliśmy do wierzchołka początkowego, to:
+
+dla bieżącego wierzchołka w jego rodzicu znajdujemy prowadzącą do niego krawędź "rzeczywistą" (nie “resztową”)
+
+sprawdzamy, czy przepływ resztowy tej krawędzi jest mniejszy od najmniejszego znalezionego do tej pory - jeśli tak to go uaktualniamy,
+
+przesuwamy indeks bieżącego wierzchołka na rodzica.
+
+Kod “pakujemy” w funkcję i zwracamy wyznaczoną najmniejszą pojemność.
+
+
+7. Augmentacja ścieżki
+
+Koncepcja. Na wejściu dostajemy graf, wierzchołek początkowy, wierzchołek końcowy, listę parent oraz najmniejszą pojemność. Ponownie “przemierzamy” ścieżkę, tym razem uaktualniając przepływ oraz przepływ resztowy.
+
+
+Implementacja:
+
+ogólny schemat postępowania jest bardzo podobny do opisanego wyżej obliczania najmniejszej pojemności,
+
+przechodząc po ścieżce należy rozważyć dwie krawędzie: "rzeczywistą" od rodzica do rozpatrywanego węzła oraz "resztową" od rozpatrywanego węzła do jego rodzica:
+
+dla krawędzi “rzeczywistych”, do przepływu dodajemy wartość najmniejszej pojemności (o tyle zwiększamy przepływ w danej krawędzi), jednocześnie tę wartość odejmujemy od przepływu resztowego,
+
+dla krawędzi “resztowych”, do przepływu resztowego dodajemy najmniejszą pojemność.
+
+
+8. Algorytm Forda-Fulkersona w wersji Edmondsa-Karpa
+
+Koncepcja i realizacja. Jak już wszystko przygotowaliśmy, to możemy złożyć gotowy algorytm. Zaczynamy od przeszukania BFS grafu, sprawdzenia, czy istnieje ścieżka od wierzchołka początkowego do końcowego, oraz obliczenia dla niej minimalnego przepływu. Potem w pętli while, jeśli minimalny przepływ > 0, będą się wykonywać następujące kroki:
+
+augmentacja ścieżki,
+
+BFS,
+
+obliczanie nowej wartości minimalnego przepływu.
+
+Na koniec należy zwrócić sumę przepływów przez krawędzie wchodzące do wierzchołka końcowego.
+
+W main-ie proszę utworzyć grafy dla poniższych przykładów testowych. Dla każdego proszę wypisać:
+- znaleziony przepływ
+- graf po operacji znajdowania przepływu (funkcją printGraph)
+
+Przypadki testowe:
+graf_0 = [ ('s','u',2), ('u','t',1), ('u','v',3), ('s','v',1), ('v','t',2)]
+# Wynik 3
+
+graf_1 = [ ('s', 'a', 16), ('s', 'c', 13), ('a', 'c', 10), ('c', 'a', 4), ('a', 'b', 12), ('b', 'c', 9), ('b', 't', 20), ('c', 'd', 14), ('d', 'b', 7), ('d', 't', 4) ]
+# Wynik 23
+
+graf_2 = [ ('s', 'a', 3), ('s', 'c', 3), ('a', 'b', 4), ('b', 's', 3), ('b', 'c', 1), ('b', 'd', 2), ('c', 'e', 6), ('c', 'd', 2), ('d', 't', 1), ('e', 't', 9)]
+# Wynik 5
+
+graf_3 = [('s', 'a', 8), ('s', 'd', 3), ('a', 'b', 9), ('b', 'd', 7), ('b', 't', 2), ('c', 't', 5), ('d', 'b', 7), ('d', 'c', 4)]
+# Wynik 6
+

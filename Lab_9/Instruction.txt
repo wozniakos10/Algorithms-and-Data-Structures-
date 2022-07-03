@@ -1,0 +1,132 @@
+1. Minimalne drzewo rozpinające - algorytm Prima
+1. Wprowadzenie
+
+MST (minimum spanning tree) lub SST (shortest spanning tree) - drzewo rozpinające danego grafu o najmniejszej z możliwych wag, tj. takie, że nie istnieje dla tego grafu inne drzewo rozpinające o mniejszej sumie wag krawędzi.
+Drzewo rozpinające - drzewo, które zawiera wszystkie wierzchołki grafu G, zaś zbiór krawędzi drzewa jest podzbiorem zbioru krawędzi grafu G.
+
+
+2. Cel ćwiczenia:
+
+modyfikacja stworzonej wcześniej struktury danych do reprezentacji grafu,
+
+implementacja algorytmu Prima do znajdowania MST,
+
+zastosowanie metody do segmentacji prostego obrazku,
+
+zadania dodatkowe: implementacja algorytmu Kruskala oraz struktury Union-Find.
+
+
+3.  Modyfikacja struktury danych
+
+W pierwszym etapie skupimy się na przedstawionym grafie - przykład pochodzi z https://en.wikipedia.org/wiki/Minimum_spanning_tree
+Na poprzednich zajęciach implementowaliśmy graf w dwóch wariantach - macierzy sąsiedztwa i listy sąsiedztwa. Dla naszych potrzeb lepsze wydaje się użycie listy, gdyż będziemy mieli do czynienia raczej z grafami “rzadkimi” (do takich można zaliczyć obrazki).
+
+
+Zaczynamy od uzupełnienia naszej klasy o kilka funkcjonalności:
+
+wygodnie jest dodać do każdego wierzchołka informację o jasności/kolorze - będzie to bardzo przydatne przy reprezentowaniu obrazków. Uwaga. Teoretycznie nie jest to konieczne, bo można za każdym razem odwoływać się do wejściowego obrazu, ale takie podejście skomplikowałoby kod. Potrzebne będzie też pobieranie i ustawianie koloru danego wierzchołka.
+
+musimy dodać do struktury informację o wadze danej krawędzi - w bazowej reprezentacji zakładaliśmy, że każda krawędź ma wagę 1. W zależności od zastosowanego rozwiązania może to mieć wpływ np. na usuwanie wierzchołków i krawędzi.
+
+
+
+4. Algorytm Prima
+
+Algorytm Prima jest prosty, zachłanny i co “dziwne/ciekawe” poprawny :). Zaczynamy od wybranego wierzchołka, dodajemy go do naszego drzewa, szukamy krawędzi o najmniejszej wadze łączącej wierzchołek z drzewa z wierzchołkiem “poza drzewem”, dodajemy krawędź oraz wierzchołek, do którego prowadzi do drzewa i tak aż nam się skończą wierzchołki.
+Bardziej formalnie zapisany algorytm Prim-MST(G):
+    Zaczynamy z arbitralnie wybranego wierzchołka s grafu G
+
+    Dopóki (są wierzchołki G nie w drzewie Tprim)
+
+            Wybierz krawędź z najmniejszą wagą pomiędzy wierzchołkiem należącym do drzewa i tym spoza
+
+            Dodaj wybraną krawędź i wierzchołek do drzewa Tprim
+
+
+Bazowa implementacja (“naiwna”) ma złożoność O(mn), gdzie m - liczba krawędzi, n - liczba wierzchołków. Wynika to z punktu “wybierz krawędź...”, gdzie za każdym razem przeglądamy wszystkie krawędzie - oczywiście proszę pamiętać, że jest to “górne ograniczenie”.
+
+My zastosujemy nieco bardziej zaawansowany (sprytny) wariant, który charakteryzuje się złożonością O(n2) - za książką The Algorithms Design Manual Steven S. Skiena. 
+Ulepszenie polega na przechowywaniu informacji o krawędziach o najmniejszej wadze pomiędzy wierzchołkami z drzewa i nie z drzewa. Warto zauważyć, że takie uaktualnienie jest wykonywane w każdej iteracji tylko dla danego wierzchołka.
+
+
+Nasza implementacja:
+
+potrzebujemy trzy dodatkowe listy: intree - czy wierzchołek jest w drzewie, distance - minimalna waga krawędzi dla danego wierzchołka, parent - “rodzic”/poprzedni wierzchołek w drzewie (do opisu krawędzi). Rozmiar n, inicjalizacja  odpowiednio: 0, duża liczba (np. float('inf')), -1.
+
+potrzebujemy też struktury na nasze drzewo (MST) - proponuje się utworzyć graf o identycznych wierzchołkach jak wejściowy, ale na razie bez krawędzi,
+
+startujemy z dowolnego wierzchołka,
+
+całość działa w pętli while wykonywanej dopóki bieżący wierzchołek v jest poza drzewem tj. intree[v] == 0,
+
+dodajemy wierzchołek do drzewa tj. intree[v]=1,
+
+przeglądamy otoczenie aktualnie rozważanego wierzchołka:
+
+sprawdzamy, czy waga krawędzi jest mniejsza od tej zapisanej w tablicy distance oraz czy wierzchołek nie jest już w drzewie,
+
+jeśli warunek jest spełniony, to uaktualniamy tablicę distance oraz zapamiętujemy rodzica (parent),
+
+szukamy kolejnego wierzchołka, który dodamy do drzewa:
+
+musimy wykonać przegląd po wszystkich wierzchołkach (technicznie po tych, które nie są w drzewie),
+
+szukamy takiego, który nie jest w MST oraz ma najmniejszą wartość w tablicy distance - czyli poszukiwana krawędź o najmniejszej wadze,
+
+dodajemy do drzewa MST krawędź - technicznie dwie krawędzie - tu używamy informacji z listy parent,
+
+warto też wyznaczyć sumę krawędzi tworzących drzewo - “długość” drzewa rozpinającego.
+
+
+Weryfikacja:
+
+Wczytujemy graf - dostarczony w pliku graf_mst.py. Uwaga. W odróżnieniu od wcześniej wykorzystywanej “mapy Polski”, tu nie mamy podwójnych krawędzi - zatem trzeba je dodać “ręcznie” tj. wczytujemy kolejne połączenie, np. krotkę (‘A’,’B’,4). Tworzymy wierzchołki ‘A’, ‘B’ oraz dwie krawędzie pomiędzy A->B i B->A obie z wagą 4.
+Na rysunku mamy podane MST dla danego grafu. Wystarczy tylko sprawdzić, czy np. lista krawędzi w naszym MST jest identyczna.
+
+Proszę, aby  program w wersji finalnej wypisywał jedynie graf wynikowy z wykorzystaniem poniższej funkcji (używa ona interfejsu podanego na zajęciach z implementacji grafów więc nie powinna wymagać poprawek):
+def printGraph(g):
+    n = g.order()
+    print("------GRAPH------",n)
+    for i in range(n):
+        v = g.getVertex(i)
+        print(v, end = " -> ")
+        nbrs = g.neighbours(i)
+        for (j, w) in nbrs:
+            print(g.getVertex(j), w, end=";")
+        print()
+    print("-------------------")
+
+
+
+2. Minimalne drzewo rozpinające - segmentacja obrazu (D)
+Pomysł segmentacji z wykorzystaniem MST polega na wyszukaniu w drzewie krawędzi o największej wadze oraz jej usunięciu. Wtedy uzyskamy dwa odrębne drzewa, o potencjalnie różnych właściwościach. Zademonstrujemy to na bardzo prostym przykładzie obrazu binarnego sample.png, ponieważ działanie metody na obrazach rzeczywistych nie jest “oczywiste”.
+
+
+ Implementacja:
+
+wczytujemy obraz (I = cv2.imread('sample.png',cv2.IMREAD_GRAYSCALE)),
+
+dla każdego piksela tworzymy wierzchołek - tu dodajemy też informację o odcieniu szarości, jako identyfikator/klucz (unikalny) można wykorzystać: YY*j+i, gdzie YY - wysokość obrazu (liczba wierszy), a i i j to współrzędne piksela. Równolegle też tworzymy drzewo.
+
+następnie dodajemy krawędzie - dla każdego wierzchołka (piksela) krawędzie opisują połączenie z 8 sąsiednimi wierzchołkami (pikselami). Dla uproszczenia można pominąć analizę brzegu, choć jak ktoś “ma zacięcie”, to proszę zbudować pełną reprezentację,
+
+dodajemy dwie krawędzie, każda z wagą w postaci modułu z różnicy jasności,
+
+wykonujemy MST metodą Prima,
+
+znajdujemy i usuwamy krawędź o najwyższej wadze w całym drzewie,
+
+wizualizujemy oba drzewa:
+
+tworzymy macierz IS = np.zeros((YY,XX),dtype='uint8')
+
+implementujemy proste przeszukiwanie grafu - np. z wykorzystaniem stosu (nie ma to większego znaczenia w tym przypadku),
+
+uruchamiamy dwa przeszukiwania - zaczynamy od wierzchołków, które łączyła usunięta krawędź,
+
+“napotkane” wierzchołki kolorujemy - proszę ustalić dwa poziomy szarości,
+
+na koniec dla każdego piksela odnajdujemy odpowiadający mu wierzchołek, odczytujemy kolor i zapisujemy do obrazu,
+
+obraz wyświetlamy - czy wynik jest taki, jak się spodziewaliśmy?
+

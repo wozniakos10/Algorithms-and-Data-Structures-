@@ -1,0 +1,53 @@
+1. Klasyczne implementacje grafu
+
+Celem ćwiczenia jest zaimplementowanie dwóch najpopularniejszych reprezentacji grafów - macierzy sąsiedztwa i listy sąsiedztwa.
+W implementacji proszę stworzyć klasę reprezentującą dane o węźle i klasę reprezentującą dane o krawędzi (to 'na zapas' - przyda się w kolejnych ćwiczeniach).
+Niech wszystkie węzły będą umieszczone w liście, natomiast reprezentacje będą zawierały indeksy do elementów tej listy.
+Ponadto przydatny będzie słownik - mapa konwertująca węzeł na jego indeks w powyższej liście.
+
+Aby uniezależnić implementację grafu od klasy opisującej węzeł proszę w tej klasie umieścić metody:
+__eq__ (porównującą węzły wg wybranego pola identyfikującego węzeł) oraz __hash__ (wykorzystywaną przez słownik). Metoda __hash__ powinna mieć postać:
+
+    def __hash__(self):
+        return hash(self.key)
+
+gdzie key jest przykładową nazwą pola, które będzie służyło do identyfikacji węzła (np. dziś będzie to litera z tablicy rejestracyjnej).
+
+Należy zaimplementować 2 klasy z identycznym interfejsem:
+    insertVertex(vertex)    - wstawia do grafu węzeł podany węzeł
+    insertEdge(vertex1, vertex2, egde) - wstawia do grafu krawędź pomiędzy podane węzły
+    deleteVertex(vertex) - usuwa podany węzeł
+    deleteEdge(vertex1, vertex2) - usuwa krawędź pomiędzy podanymi węzłami      
+    getVertexIdx(vertex)      - zwraca indeks węzła (wykorzystując wspomniany słownik)
+    getVertex(vertex_idx)    - zwraca węzeł o podanym indeksie (niejako odwrotność powyższej metody)
+    neighbours(vertex_idx) - zwraca listę indeksów węzłów przyległych do węzła o podanym indeksie (połączenia wyjściowe)
+    order()                    - zwraca rząd grafu (liczbę węzłów)
+    size()                      - zwraca rozmiar grafu (liczbę krawędzi)
+Dodatkowo potrzeba będzie metoda:
+    edges() - zwracająca wszystkie krawędzie grafu w postaci listy par: (klucz_węzła_początkowego, klucz_węzła_końcowego) - taka implementacja nie jest standardowa, ale będzie dla nas bardziej przydatna do wyrysowania grafu.
+
+Przy usuwaniu węzła należy uwzględnić, że:
+- w liście sąsiedztwa trzeba jego indeks usunąć ze wszystkich list sąsiadów, a indeksy od niego wyższe trzeba zdekrementować
+- trzeba uaktualnić słownik (przejść po wszystkich węzłach i wpisać do słownika ich aktualne indeksy)
+
+Implementacja macierzy może wykorzystać listę list (analogicznie jak w zadaniu z pierwszych ćwiczeń)
+Implementacja listy może wykorzystać listy pythonowe lub listy wiązane (analogicznie jak w zadaniu z drugich ćwiczeń)
+
+W ćwiczeniu należy stworzyć graf odwzorowujący sąsiedztwa polskich województw. Jako dane początkowe udostępniona jest mapa Polski (https://fotoomnia.com/photo/Mapa-Konturowa-659 - przeskalowana) oraz plik polska.py KTÓREGO NIE NALEŻY UZUPEŁNIAĆ/MODYFIKOWAĆ. Pracę zaczynamy od utworzenia własnego pliku w którym umieszczamy import polska. Plik polska.py zawiera reprezentację grafu sąsiedztwa województw w postaci listy krawędzi (pod nazwa graf). Daną przechowywaną w węzłach są pierwsze litery tablic rejestracyjnych danego województwa. Ponadto kod zawiera funkcję wyświetlającą graf na mapie  - draw_map - która powinna dostać jako argument listę zwracaną przez metodę edges. (Jak działa funkcja można szybko sprawdzić wołając polska.draw_map(polska.graf)) 
+
+UWAGA - dziś uruchamia się środowisko graficzne w którym powinny pojawić się 2 okna - okno z mapą i konsola. Mogą wystąpić problemy typu:
+ - nie widać konsoli - prawdopodobnie przysłania ją okno grafu.
+ - przez dłużej niż 10 sekund nic się nie pokazuje (niebieski pusty ekran) - kliknięcie powinno spowodować wyświetlenie konsoli z komunikatem błędu.
+
+Państwa zadaniem jest stworzenie grafów w obu implementowanych reprezentacjach i wykonanie na nich podanych niżej operacji. Ponieważ interfejsy obu klas są identyczne, więc kod testujący powinien być wspólny dla obu grafów.
+Na początek należy stworzyć graf korzystając z podanej listy krawędzi (z użyciem metod insertVertex i insertEdge).
+Następnie należy usunąć z grafu województwo małopolskie (deleteVertex) oraz połączenia między mazowieckim i łódzkimi (deleteEdge).
+Poprawność należy sprawdzić przez wyświetlenie stworzonych grafów (draw_map). 
+
+
+2. Kolorowanie grafu (D)
+
+Używając implementacji z poprzedniego ćwiczenia należy napisać funkcję, która otrzyma graf i "pokoloruje" go metodą zachłanna przechodząc go w kolejności DFS lub BFS w zależności po podanego parametru (zarówno kolejkę jak i stos można zaimplementować jako listę pythonową, gdzie w jednym przypadku element jest pobierany przez pop(0) a w  drugim przez pop()). Kolory będą reprezentowane przez kolejne liczby.
+Kolorowanie można zwizualizować funkcją  draw_map podając jej jako drugi argument listę par (litera_województwa, kolor) - wówczas litery województw zostaną zastąpione numerami (czyli "kolorami").   
+Funkcję należy przetestować na grafie w początkowej postaci (czyli z małopolską i połączeniami łódzkie-mazowieckie). To czy graf będzie zaimplementowany jao lista czy jako  tablica nie powinno to mieć znaczenia (funkcja powinna używać  interfejsu wspólnego dla obu implementacji).
+Zaobserwuj maksymalną liczbę kolorów, która jest potrzebna przy przechodzeniu DFS i BFS.
